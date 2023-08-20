@@ -6,7 +6,7 @@ Python application for Linux that automatically tracks online coding assessments
 ## 💻 Development
 ONGOING!\
 Created using Google's Gmail API\
-GUI made using PyGTK\
+GUI made using PyGTK
 
 ## 🔨 Tools
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
