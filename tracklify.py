@@ -78,38 +78,6 @@ def main():
                 print(f'Emails containing "{search_word}":')
                 for message in messages:
                     msg = service.users().messages().get(userId='me', id=message['id']).execute()
-                    #jsonString = json.dumps(msg, indent = 4)
-                    #print(jsonString)
-                    
-                    def extract_text_from_parts(parts):
-                        text_content = []
-                        for part in parts:
-                            mime_type = part["mimeType"]
-                            if mime_type == "text/plain" or mime_type == "text/html":
-                                data = part["body"]["data"]
-                                decoded_data = base64.urlsafe_b64decode(data).decode("utf-8")
-                                text_content.append(decoded_data)
-                        return text_content
-                    
-                    plain_text_part = None
-                    for part in msg['payload']['parts']:
-                        if part['mimeType'] == 'text/plain':
-                            plain_text_part = part
-                            break
-
-                    if plain_text_part:
-                        encoded_text = plain_text_part['body']['data']
-                        decoded_text = base64.urlsafe_b64decode(encoded_text).decode("utf-8")
-                        
-                        # Remove HTML tags using BeautifulSoup
-                        soup = BeautifulSoup(decoded_text, 'html.parser')
-                        plain_text = soup.get_text(separator=' ')
-                        
-                        print(plain_text)
-                    else:
-                        print("No plain text part found in the email.")
-                    
-                    break
                     headers = msg['payload']['headers']
                     subject = next((header['value'] for header in headers if header['name'] == 'Subject'), None)
                     if subject:
@@ -117,6 +85,51 @@ def main():
                         print('Subject:', subject)
                     else:
                         print('Subject not found for message ID:', message['id'])
+                    #print(json.dumps(msg, indent = 4))
+                    
+                    if 'parts' in msg['payload']:
+                        plain_text_part = None
+                        for part in msg['payload']['parts']:
+                            if part['mimeType'] == 'text/plain':
+                                plain_text_part = part
+                                break
+                        if plain_text_part:
+                            encoded_text = plain_text_part['body']['data']
+                            decoded_text = base64.urlsafe_b64decode(encoded_text).decode("utf-8")                        
+                            soup = BeautifulSoup(decoded_text, 'html.parser')
+                            plain_text = soup.get_text(separator=' ')
+                            print(plain_text)
+                        else:
+                            print("No plain text part found in the email.")
+                    else:
+                        # Process messages without 'parts' field
+                        if 'body' in msg['payload']:
+                            encoded_text = msg['payload']['body']['data']
+                            decoded_text = base64.urlsafe_b64decode(encoded_text).decode("utf-8")
+                            soup = BeautifulSoup(decoded_text, 'html.parser')
+                            plain_text = soup.get_text(separator=' ')
+                            print(plain_text)
+                        else:
+                            print("No plain text body found in the email.")
+                    
+                    """
+                    #if parts in payload
+                    #if body in payload
+                    plain_text_part = None
+                    for part in msg['payload']['parts']:
+                        if part['mimeType'] == 'text/plain':
+                            plain_text_part = part
+                            break
+                    if plain_text_part:
+                        encoded_text = plain_text_part['body']['data']
+                        decoded_text = base64.urlsafe_b64decode(encoded_text).decode("utf-8")                        
+                        soup = BeautifulSoup(decoded_text, 'html.parser')
+                        plain_text = soup.get_text(separator=' ')
+                        print(plain_text)
+                    else:
+                        print("No plain text part found in the email.")
+                        """
+                    
                         
             except HttpError as error:
                 print(f'An error occurred: {error}')
